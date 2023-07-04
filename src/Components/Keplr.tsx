@@ -1,6 +1,13 @@
 import type { ChainInfo } from "@keplr-wallet/types";
 import React, { useEffect, useState } from "react";
+import { coin, coins } from "@cosmjs/proto-signing";
+import {
+	assertIsDeliverTxSuccess,
+	SigningStargateClient,
+} from "@cosmjs/stargate";
+
 import osmo from "../config/osmosis";
+
 
 function Keplr() {
 	const [chain, setChain] = useState<ChainInfo>(osmo);
@@ -28,16 +35,33 @@ function Keplr() {
 	}, [address, client, sendHash]);
 
 	// 连接keplr钱包  Todo
-	const connectWallet = async () => {};
+	const connectWallet = async () => {
+		// init keplr wallet
+		if (!window.keplr || !window.getOfflineSigner) {
+			return;
+		}
+		await window.keplr.experimentalSuggestChain(chain);
+		await window.keplr.enable(chain.chainId);
+
+		const offlineSigner = window.getOfflineSigner?.(chain.chainId);
+		const accounts = await offlineSigner?.getAccounts();
+		const client = await SigningStargateClient.connectWithSigner(
+			chain.rpc,
+			offlineSigner
+		);
+		// console.log(client);
+		setAddress(accounts[0].address);
+		setClient(client);
+	};
 
 	// 余额查询  Todo
-	const getBalances = async () => {};
+	const getBalances = async () => { };
 
 	// txhash查询  Todo
-	const getTx = async () => {};
+	const getTx = async () => { };
 
 	// 转账 Todo
-	const sendToken = async () => {};
+	const sendToken = async () => { };
 
 	return (
 		<div className="keplr">

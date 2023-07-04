@@ -49,22 +49,63 @@ function Stargate() {
 	}, [address, client]);
 
 	// 创建账户 Todo
-	const createAccount = async () => {};
+	const createAccount = async () => {
+		const myAccount: any = await DirectSecp256k1HdWallet.generate(12, {
+			prefix: "osmo",
+		});
+		localStorage.setItem("mnemonic", myAccount?.secret.data)
+		setMnemonic(myAccount.serializeWithEncryptionKey.data)
+
+	};
 
 	// 通过助记词钱包获得地址 Todo
-	const getAddressByMnemonic = async () => {}
+	const getAddressByMnemonic = async () => {
+		const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+			prefix: "osmo",
+		})
+		const [firstAccount] = await wallet.getAccounts();
+		setAddress(firstAccount.address)
+	}
 
 	// 余额查询 Todo
-	const getBalance = async () => {};
+	const getBalance = async () => {
+		if (client) {
+			const _balance = await client.getBalance(address, chain.stakeCurrency.coinMinimalDenom);
+			setBalance(_balance)
+		}
+	};
 
 	// strageClient 基础 api 使用 Todo
-	const getOthers = async () => {};
+	const getOthers = async () => {
+		if (!address) {
+			return;
+		}
+		const _height = await client?.getHeight();
+
+		const _chainId = await client?.getChainId();
+		const _allBalance = await client?.getAllBalances(address);
+		const _accounts = await client?.getAccount(address);
+		const _block = await client?.getBlock(_height);
+
+		console.log(_allBalance);
+		setChainId(_chainId);
+
+		setHeight(_height);
+		setAccount(_accounts);
+		setBlock(_block);
+	};
 
 	// connect client Todo
-	const connect = async () => {};
+	const connect = async () => {
+		const _strageClient = await StargateClient.connect(chain.rpc);
+		setClient(_strageClient);
+	};
 
 	// disconnect client Todo
-	const disConnect = async () => {};
+	const disConnect = async () => {
+		const _strageClient = await client.disconnect();
+		setClient(_strageClient);
+	};
 
 	return (
 		<div className="stargate">
